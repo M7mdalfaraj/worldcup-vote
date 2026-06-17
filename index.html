@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>نحطها؟ · تصويت كأس العالم 2026</title>
+<meta name="description" content="صوّتوا جماعياً على مباريات كأس العالم 2026 — أي مباراة نحطها نتفرّج عليها سوا؟" />
+<meta name="theme-color" content="#0a1428" />
+<meta property="og:title" content="نحطها؟ · تصويت كأس العالم 2026" />
+<meta property="og:description" content="صوّتوا جماعياً على مباريات كأس العالم — أي مباراة نحطها؟" />
+<meta property="og:type" content="website" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+<style>
+  :root{
+    --navy:#0a1428; --navy-2:#0f1d36; --navy-3:#13264a;
+    --gold:#d4af37; --gold-2:#f0d77a; --gold-deep:#b8941f;
+    --ink:#eaf0ff; --muted:#9fb0d0;
+    --yes:#27d07a; --no:#ff5c6c;
+    --glass:rgba(255,255,255,0.045);
+    --line:rgba(212,175,55,0.24);
+    --r:18px;
+    --maxw:760px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Cairo',system-ui,-apple-system,Segoe UI,Tahoma,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 560px at 85% -12%, rgba(212,175,55,0.12), transparent 60%),
+      radial-gradient(900px 520px at -10% 6%, rgba(40,92,168,0.20), transparent 55%),
+      var(--navy);
+    background-attachment:fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:18px 16px 60px;}
+
+  /* ---------- Header ---------- */
+  header.app{
+    position:sticky;top:0;z-index:30;
+    backdrop-filter:blur(12px);
+    background:linear-gradient(180deg, rgba(10,20,40,0.92), rgba(10,20,40,0.72));
+    border-bottom:1px solid rgba(212,175,55,0.18);
+  }
+  .head-inner{max-width:var(--maxw);margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:19px;letter-spacing:.2px;}
+  .brand .trophy{font-size:22px;filter:drop-shadow(0 2px 6px rgba(212,175,55,.5));}
+  .brand b{background:linear-gradient(90deg,var(--gold-2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .head-spacer{flex:1;}
+  .pill{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--glass);border:1px solid rgba(255,255,255,0.08);
+    color:var(--muted);font-size:13px;font-weight:700;
+    padding:6px 11px;border-radius:999px;white-space:nowrap;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:#5b6b86;box-shadow:0 0 0 0 rgba(39,208,122,.6);}
+  .dot.on{background:var(--yes);animation:pulse 2s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(39,208,122,.5);}70%{box-shadow:0 0 0 7px rgba(39,208,122,0);}100%{box-shadow:0 0 0 0 rgba(39,208,122,0);}}
+  .who{display:flex;align-items:center;gap:8px;}
+  .who .name{font-weight:800;color:var(--gold-2);}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--line);color:var(--ink);
+    font-family:inherit;font-weight:700;font-size:13px;padding:6px 12px;border-radius:10px;cursor:pointer;
+    transition:background .2s,border-color .2s,transform .1s;
+  }
+  .btn-ghost:hover{background:var(--glass);border-color:var(--gold);}
+  .btn-ghost:active{transform:translateY(1px);}
+
+  /* ---------- Hero ---------- */
+  .hero{text-align:center;padding:22px 6px 10px;}
+  .hero h1{margin:0 0 6px;font-size:clamp(24px,6vw,38px);font-weight:900;line-height:1.15;}
+  .hero h1 .accent{background:linear-gradient(90deg,var(--gold-2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{margin:0;color:var(--muted);font-size:15px;font-weight:600;}
+
+  /* ---------- Connection / config banner ---------- */
+  .banner{
+    margin:14px 0;padding:12px 14px;border-radius:14px;font-weight:700;font-size:14px;
+    border:1px solid rgba(255,92,108,.4);background:rgba(255,92,108,.10);color:#ffd2d7;display:none;
+  }
+  .banner.show{display:block;}
+
+  /* ---------- Results board ---------- */
+  .board{
+    margin:18px 0 8px;border:1px solid var(--line);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(212,175,55,0.10), rgba(19,38,74,0.30));
+    overflow:hidden;
+  }
+  .board-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(212,175,55,.16);}
+  .board-head .ttl{font-weight:900;font-size:17px;color:var(--gold-2);}
+  .board-head .sub{color:var(--muted);font-size:12.5px;font-weight:700;margin-inline-start:auto;}
+  .board-body{padding:12px 14px;display:flex;flex-direction:column;gap:9px;}
+  .winner{
+    display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:13px;
+    background:rgba(39,208,122,0.08);border:1px solid rgba(39,208,122,0.28);
+  }
+  .winner .rank{font-weight:900;color:var(--gold-2);min-width:24px;text-align:center;font-size:15px;}
+  .winner .teams{font-weight:800;flex:1;font-size:14.5px;}
+  .winner .meta{font-size:12px;color:var(--muted);font-weight:700;}
+  .winner .big{color:var(--yes);font-weight:900;font-size:15px;white-space:nowrap;}
+  .empty{color:var(--muted);font-weight:700;text-align:center;padding:14px;font-size:14px;}
+
+  /* ---------- Day badge ---------- */
+  .day{margin:26px 0 14px;display:flex;justify-content:center;}
+  .day-badge{
+    position:relative;display:inline-flex;align-items:center;gap:9px;
+    padding:11px 34px;font-weight:900;font-size:16px;letter-spacing:.3px;color:#0a1428;
+    background:linear-gradient(180deg,var(--gold-2),var(--gold-deep));
+    clip-path:polygon(16px 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 16px 100%, 0 50%);
+    box-shadow:0 8px 22px rgba(212,175,55,.18);
+  }
+  .day-badge .em{font-size:16px;}
+
+  /* ---------- Match card ---------- */
+  .match{
+    margin:11px 0;padding:15px 15px 13px;border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(19,38,74,0.55), rgba(10,20,40,0.50));
+    border:1px solid rgba(255,255,255,0.07);
+    backdrop-filter:blur(8px);
+    box-shadow:0 10px 30px rgba(0,0,0,.20);
+  }
+  .m-top{display:flex;align-items:center;gap:10px;}
+  .team{display:flex;align-items:center;gap:9px;flex:1;min-width:0;}
+  .team.away{justify-content:flex-start;flex-direction:row-reverse;text-align:start;}
+  .team .flag{font-size:30px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));}
+  .team .tn{font-weight:800;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vs{
+    flex:0 0 auto;font-weight:900;font-size:12px;color:var(--gold-2);
+    background:rgba(212,175,55,.12);border:1px solid var(--line);
+    width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  }
+  .m-time{
+    display:flex;align-items:center;justify-content:center;gap:6px;margin:11px 0 12px;
+    color:var(--muted);font-size:12.5px;font-weight:700;
+  }
+  .m-time .t{color:var(--gold-2);font-weight:800;font-size:14px;}
+
+  /* vote buttons */
+  .votes{display:flex;gap:9px;}
+  .vote{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 8px;border-radius:13px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:15px;color:var(--ink);
+    background:var(--glass);border:1.5px solid rgba(255,255,255,0.10);
+    transition:background .18s,border-color .18s,transform .08s,box-shadow .18s;
+  }
+  .vote .c{font-weight:900;font-size:13px;opacity:.85;min-width:18px;}
+  .vote:hover{border-color:rgba(255,255,255,.22);}
+  .vote:active{transform:translateY(1px) scale(.99);}
+  .vote.yes.active{
+    background:linear-gradient(180deg, rgba(39,208,122,.26), rgba(39,208,122,.12));
+    border-color:var(--yes);box-shadow:0 6px 18px rgba(39,208,122,.18);
+  }
+  .vote.no.active{
+    background:linear-gradient(180deg, rgba(255,92,108,.24), rgba(255,92,108,.10));
+    border-color:var(--no);box-shadow:0 6px 18px rgba(255,92,108,.16);
+  }
+  .vote.yes.active .lbl{color:#aef5cf;}
+  .vote.no.active .lbl{color:#ffc6cc;}
+
+  /* percentage bar */
+  .stat{margin-top:11px;}
+  .bar{height:9px;border-radius:999px;background:rgba(255,92,108,.20);overflow:hidden;}
+  .barFill{display:block;height:100%;width:0%;border-radius:999px;
+    background:linear-gradient(90deg,var(--gold),var(--yes));transition:width .55s cubic-bezier(.2,.8,.2,1);}
+  .stat-row{display:flex;align-items:center;gap:10px;margin-top:7px;font-size:12.5px;font-weight:700;color:var(--muted);}
+  .stat-row .pctTxt{margin-inline-start:auto;color:var(--gold-2);font-weight:800;}
+  .stat-row .cy{color:#8df0bd;} .stat-row .cn{color:#ffb3ba;}
+
+  /* ---------- Overlay (name gate + admin) ---------- */
+  .overlay{
+    position:fixed;inset:0;z-index:60;display:none;
+    align-items:center;justify-content:center;padding:20px;
+    background:rgba(4,9,20,0.78);backdrop-filter:blur(8px);
+  }
+  .overlay.show{display:flex;}
+  .card{
+    width:100%;max-width:420px;background:linear-gradient(180deg,var(--navy-3),var(--navy-2));
+    border:1px solid var(--line);border-radius:22px;padding:26px 22px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center;
+  }
+  .card .trophy{font-size:42px;}
+  .card h2{margin:10px 0 6px;font-size:22px;font-weight:900;}
+  .card p{margin:0 0 18px;color:var(--muted);font-size:14px;font-weight:600;}
+  .field{display:flex;flex-direction:column;gap:10px;text-align:start;}
+  .field label{font-weight:800;font-size:13.5px;color:var(--gold-2);}
+  .field input{
+    font-family:inherit;font-size:16px;font-weight:700;color:var(--ink);
+    background:rgba(0,0,0,.25);border:1.5px solid var(--line);border-radius:13px;padding:13px 14px;
+    text-align:start;
+  }
+  .field input:focus{outline:none;border-color:var(--gold-2);box-shadow:0 0 0 3px rgba(240,215,122,.18);}
+  .btn-gold{
+    margin-top:14px;width:100%;font-family:inherit;font-weight:900;font-size:16px;color:#0a1428;cursor:pointer;
+    background:linear-gradient(180deg,var(--gold-2),var(--gold-deep));border:none;border-radius:13px;padding:14px;
+    transition:transform .1s,filter .2s;
+  }
+  .btn-gold:hover{filter:brightness(1.06);}
+  .btn-gold:active{transform:translateY(1px);}
+  .err{color:#ffb3ba;font-size:13px;font-weight:700;min-height:18px;margin-top:6px;text-align:start;}
+
+  /* ---------- Admin ---------- */
+  .admin-wrap{max-width:var(--maxw);margin:0 auto;}
+  .admin-card{width:100%;max-width:640px;max-height:88vh;overflow:auto;text-align:start;}
+  .admin-card h2{text-align:start;}
+  .a-stats{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 16px;}
+  .a-stat{flex:1;min-width:120px;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:13px;padding:12px;text-align:center;}
+  .a-stat .n{font-size:24px;font-weight:900;color:var(--gold-2);}
+  .a-stat .l{font-size:12px;color:var(--muted);font-weight:700;}
+  .a-sec-ttl{font-weight:900;color:var(--gold-2);margin:16px 0 8px;font-size:15px;}
+  table.a-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+  table.a-tbl th,table.a-tbl td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.07);text-align:start;}
+  table.a-tbl th{color:var(--muted);font-weight:800;font-size:12px;}
+  table.a-tbl td.num{font-weight:800;text-align:center;}
+  .voter{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:13px;padding:11px 12px;margin-bottom:9px;}
+  .voter .vh{display:flex;align-items:center;gap:8px;font-weight:900;margin-bottom:7px;}
+  .voter .vh .badge{font-size:11px;color:var(--muted);font-weight:700;margin-inline-start:auto;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap;}
+  .chip.y{background:rgba(39,208,122,.14);border:1px solid rgba(39,208,122,.4);color:#aef5cf;}
+  .chip.n{background:rgba(255,92,108,.13);border:1px solid rgba(255,92,108,.4);color:#ffc6cc;}
+
+  /* ---------- Toast ---------- */
+  #toast{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:26px;z-index:80;
+    background:var(--navy-3);border:1px solid var(--line);color:var(--ink);
+    font-weight:800;font-size:14px;padding:12px 18px;border-radius:13px;
+    box-shadow:0 14px 40px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  }
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;font-weight:600;margin-top:34px;opacity:.7;}
+
+  :focus-visible{outline:2px solid var(--gold-2);outline-offset:2px;border-radius:10px;}
+
+  @media (max-width:480px){
+    .team .tn{font-size:14px;} .team .flag{font-size:26px;}
+    .brand{font-size:17px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;animation:none !important;scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ======= Header ======= -->
+<header class="app">
+  <div class="head-inner">
+    <div class="brand"><span class="trophy">🏆</span><span>نحطها؟ <b>2026</b></span></div>
+    <div class="head-spacer"></div>
+    <span class="pill" id="connPill"><span class="dot" id="connDot"></span><span id="connTxt">يتصل…</span></span>
+    <span class="pill" title="عدد المصوّتين">👥 <span id="voterCount">0</span></span>
+    <div class="who" id="whoBox" hidden>
+      <span class="pill">أهلاً، <span class="name" id="whoName">—</span></span>
+      <button class="btn-ghost" id="changeNameBtn">تغيير الاسم</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="hero">
+    <h1>أي مباراة <span class="accent">نحطها</span>؟</h1>
+    <p>صوّتوا سوا على مباريات كأس العالم 2026 · كل الأوقات بتوقيت الرياض</p>
+  </div>
+
+  <div class="banner" id="cfgBanner">⚠️ قاعدة البيانات غير مهيأة بعد — التصويت الحي يشتغل بعد إضافة إعدادات Firebase.</div>
+
+  <!-- ======= Results board ======= -->
+  <section class="board" id="board" aria-labelledby="boardTtl">
+    <div class="board-head">
+      <span class="em" aria-hidden="true">🔥</span>
+      <span class="ttl" id="boardTtl">المباريات المتفق عليها</span>
+      <span class="sub">≥ 60% قالوا نحطها</span>
+    </div>
+    <div class="board-body" id="resultsList"></div>
+  </section>
+
+  <!-- ======= Matches ======= -->
+  <main id="matches" aria-live="polite"></main>
+
+  <footer>صُنع لأجل الشلّة · شاركوا الرابط وخلّونا نصوّت 🏟️</footer>
+</div>
+
+<!-- ======= Name gate overlay ======= -->
+<div class="overlay" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTtl">
+  <div class="card">
+    <div class="trophy" aria-hidden="true">🏆</div>
+    <h2 id="gateTtl">منوّرنا!</h2>
+    <p>اكتب اسمك الأول عشان تبدأ التصويت. بنحفظه لك تلقائياً.</p>
+    <div class="field">
+      <label for="nameInput">اسمك الأول</label>
+      <input id="nameInput" type="text" inputmode="text" autocomplete="given-name"
+             placeholder="مثال: محمد" maxlength="24" enterkeyhint="done" />
+      <div class="err" id="nameErr" role="alert"></div>
+    </div>
+    <button class="btn-gold" id="enterBtn">يلا ندخل ✨</button>
+  </div>
+</div>
+
+<!-- ======= Admin overlay ======= -->
+<div class="overlay" id="admin" role="dialog" aria-modal="true" aria-labelledby="adminTtl">
+  <div class="card admin-card">
+    <div id="adminGate">
+      <h2 id="adminTtl">🔒 لوحة الإدارة</h2>
+      <p>هذي الصفحة لك وحدك. اكتب رمز الدخول.</p>
+      <div class="field">
+        <label for="adminPass">رمز الدخول</label>
+        <input id="adminPass" type="password" placeholder="••••" enterkeyhint="done" />
+        <div class="err" id="adminErr" role="alert"></div>
+      </div>
+      <button class="btn-gold" id="adminEnterBtn">دخول</button>
+      <button class="btn-ghost" id="adminCloseBtn" style="margin-top:10px;width:100%;">رجوع للموقع</button>
+    </div>
+    <div id="adminPanel" hidden></div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ======= Firebase SDK (compat) ======= -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+<script>
+/* =========================================================================
+   نحطها؟ — Live group voting for World Cup 2026 matches
+   Realtime DB layout (3 paths):
+     tallies/{matchId}   = { yes: <int>, no: <int> }   // aggregated counts
+     users/{userKey}     = { name: <string>, ts: <ts> } // voters
+     userVotes/{userKey}/{matchId} = "yes" | "no"        // each person's vote
+   ========================================================================= */
+
+/* >>> STEP 1: ضع إعدادات Firebase هنا (apiKey و databaseURL أهم شي) <<< */
+const firebaseConfig = {
+  apiKey:            "AIzaSyDgyqLWeeIho1KLjPeRJjrfwfQdVSkm-g8",
+  authDomain:        "world-cup-vote-8d208.firebaseapp.com",
+  databaseURL:       "https://world-cup-vote-8d208-default-rtdb.firebaseio.com",
+  projectId:         "world-cup-vote-8d208",
+  storageBucket:     "world-cup-vote-8d208.firebasestorage.app",
+  messagingSenderId: "131816921633",
+  appId:             "1:131816921633:web:53f0d780067a6b7edd2160"
+};
+
+/* إعدادات قابلة للتعديل */
+const CONSENSUS_PCT = 60;   // النسبة المطلوبة لظهور المباراة في لوحة "المتفق عليها"
+const CONSENSUS_MIN = 1;    // أقل عدد أصوات لظهور المباراة (ارفعها لو الشلّة كبيرة)
+const ADMIN_PASSCODE = "7788"; // غيّرها لرمزك الخاص
+
+/* ======= بيانات المباريات (34 مباراة) ======= */
+const DAYS = [
+  { id:"d22", title:"الاثنين 22 يونيو", em:"📅", matches:[
+    {id:"m01", home:{n:"أوروغواي",f:"🇺🇾"}, away:{n:"الرأس الأخضر",f:"🇨🇻"}, t:"01:00"},
+    {id:"m02", home:{n:"نيوزيلندا",f:"🇳🇿"}, away:{n:"مصر",f:"🇪🇬"}, t:"04:00"},
+    {id:"m03", home:{n:"الأرجنتين",f:"🇦🇷"}, away:{n:"النمسا",f:"🇦🇹"}, t:"20:00"},
+  ]},
+  { id:"d23", title:"الثلاثاء 23 يونيو", em:"📅", matches:[
+    {id:"m04", home:{n:"فرنسا",f:"🇫🇷"}, away:{n:"العراق",f:"🇮🇶"}, t:"00:00"},
+    {id:"m05", home:{n:"النرويج",f:"🇳🇴"}, away:{n:"السنغال",f:"🇸🇳"}, t:"03:00"},
+    {id:"m06", home:{n:"الأردن",f:"🇯🇴"}, away:{n:"الجزائر",f:"🇩🇿"}, t:"06:00"},
+    {id:"m07", home:{n:"البرتغال",f:"🇵🇹"}, away:{n:"أوزبكستان",f:"🇺🇿"}, t:"20:00"},
+    {id:"m08", home:{n:"إنجلترا",f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"}, away:{n:"غانا",f:"🇬🇭"}, t:"23:00"},
+  ]},
+  { id:"d24", title:"الأربعاء 24 يونيو", em:"📅", matches:[
+    {id:"m09", home:{n:"بنما",f:"🇵🇦"}, away:{n:"كرواتيا",f:"🇭🇷"}, t:"02:00"},
+    {id:"m10", home:{n:"كولومبيا",f:"🇨🇴"}, away:{n:"الكونغو الديمقراطية",f:"🇨🇩"}, t:"05:00"},
+    {id:"m11", home:{n:"سويسرا",f:"🇨🇭"}, away:{n:"كندا",f:"🇨🇦"}, t:"22:00"},
+    {id:"m12", home:{n:"البوسنة والهرسك",f:"🇧🇦"}, away:{n:"قطر",f:"🇶🇦"}, t:"22:00"},
+  ]},
+  { id:"d25", title:"الخميس 25 يونيو", em:"📅", matches:[
+    {id:"m13", home:{n:"اسكتلندا",f:"🏴󠁧󠁢󠁳󠁣󠁴󠁿"}, away:{n:"البرازيل",f:"🇧🇷"}, t:"01:00"},
+    {id:"m14", home:{n:"المغرب",f:"🇲🇦"}, away:{n:"هايتي",f:"🇭🇹"}, t:"01:00"},
+    {id:"m15", home:{n:"تشيكيا",f:"🇨🇿"}, away:{n:"المكسيك",f:"🇲🇽"}, t:"04:00"},
+    {id:"m16", home:{n:"جنوب أفريقيا",f:"🇿🇦"}, away:{n:"كوريا الجنوبية",f:"🇰🇷"}, t:"04:00"},
+    {id:"m17", home:{n:"الإكوادور",f:"🇪🇨"}, away:{n:"ألمانيا",f:"🇩🇪"}, t:"23:00"},
+    {id:"m18", home:{n:"كوراساو",f:"🇨🇼"}, away:{n:"ساحل العاج",f:"🇨🇮"}, t:"23:00"},
+  ]},
+  { id:"d26", title:"الجمعة 26 يونيو", em:"📅", matches:[
+    {id:"m19", home:{n:"اليابان",f:"🇯🇵"}, away:{n:"السويد",f:"🇸🇪"}, t:"02:00"},
+    {id:"m20", home:{n:"تونس",f:"🇹🇳"}, away:{n:"هولندا",f:"🇳🇱"}, t:"02:00"},
+    {id:"m21", home:{n:"تركيا",f:"🇹🇷"}, away:{n:"الولايات المتحدة",f:"🇺🇸"}, t:"05:00"},
+    {id:"m22", home:{n:"باراغواي",f:"🇵🇾"}, away:{n:"أستراليا",f:"🇦🇺"}, t:"05:00"},
+    {id:"m23", home:{n:"النرويج",f:"🇳🇴"}, away:{n:"فرنسا",f:"🇫🇷"}, t:"22:00"},
+    {id:"m24", home:{n:"السنغال",f:"🇸🇳"}, away:{n:"العراق",f:"🇮🇶"}, t:"22:00"},
+  ]},
+  { id:"d27", title:"السبت 27 يونيو", em:"📅", matches:[
+    {id:"m25", home:{n:"الرأس الأخضر",f:"🇨🇻"}, away:{n:"السعودية",f:"🇸🇦"}, t:"03:00"},
+    {id:"m26", home:{n:"أوروغواي",f:"🇺🇾"}, away:{n:"إسبانيا",f:"🇪🇸"}, t:"03:00"},
+    {id:"m27", home:{n:"مصر",f:"🇪🇬"}, away:{n:"إيران",f:"🇮🇷"}, t:"06:00"},
+    {id:"m28", home:{n:"نيوزيلندا",f:"🇳🇿"}, away:{n:"بلجيكا",f:"🇧🇪"}, t:"06:00"},
+  ]},
+  { id:"d28", title:"الأحد 28 يونيو", em:"📅", matches:[
+    {id:"m29", home:{n:"بنما",f:"🇵🇦"}, away:{n:"إنجلترا",f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿"}, t:"00:00"},
+    {id:"m30", home:{n:"كرواتيا",f:"🇭🇷"}, away:{n:"غانا",f:"🇬🇭"}, t:"00:00"},
+    {id:"m31", home:{n:"كولومبيا",f:"🇨🇴"}, away:{n:"البرتغال",f:"🇵🇹"}, t:"02:30"},
+    {id:"m32", home:{n:"الكونغو الديمقراطية",f:"🇨🇩"}, away:{n:"أوزبكستان",f:"🇺🇿"}, t:"02:30"},
+    {id:"m33", home:{n:"الجزائر",f:"🇩🇿"}, away:{n:"النمسا",f:"🇦🇹"}, t:"05:00"},
+    {id:"m34", home:{n:"الأردن",f:"🇯🇴"}, away:{n:"الأرجنتين",f:"🇦🇷"}, t:"05:00"},
+  ]},
+];
+const MATCH_INDEX = {};
+DAYS.forEach(d => d.matches.forEach(m => { MATCH_INDEX[m.id] = m; }));
+
+/* ======= الحالة ======= */
+let db = null, firebaseReady = false;
+let userKey = localStorage.getItem("wcv_userKey");
+if(!userKey){ userKey = "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2,8); localStorage.setItem("wcv_userKey", userKey); }
+let myName = localStorage.getItem("wcv_name") || "";
+let tallies = {};      // matchId -> {yes,no}
+let myVotes = {};      // matchId -> 'yes'|'no'
+let allUsers = {};     // userKey -> {name,ts}
+let allVotes = {};     // userKey -> {matchId:'yes'|'no'}
+const locks = {};
+let adminUnlocked = false;
+
+/* ======= أدوات ======= */
+const $ = id => document.getElementById(id);
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2200); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ======= بناء واجهة المباريات ======= */
+function buildMatches(){
+  const root = $("matches");
+  const html = DAYS.map(d => `
+    <div class="day"><div class="day-badge"><span class="em" aria-hidden="true">${d.em}</span>${esc(d.title)}</div></div>
+    ${d.matches.map(m => matchCard(m)).join("")}
+  `).join("");
+  root.innerHTML = html;
+}
+function matchCard(m){
+  return `
+  <article class="match" id="match-${m.id}">
+    <div class="m-top">
+      <div class="team home"><span class="flag" aria-hidden="true">${m.home.f}</span><span class="tn">${esc(m.home.n)}</span></div>
+      <div class="vs" aria-hidden="true">ضد</div>
+      <div class="team away"><span class="flag" aria-hidden="true">${m.away.f}</span><span class="tn">${esc(m.away.n)}</span></div>
+    </div>
+    <div class="m-time">🕐 <span class="t">${m.t}</span> · بتوقيت الرياض</div>
+    <div class="votes">
+      <button class="vote yes" data-match="${m.id}" data-choice="yes" aria-pressed="false"
+              aria-label="نحطها — ${esc(m.home.n)} ضد ${esc(m.away.n)}">
+        <span class="lbl">✅ نحطها</span><span class="c cy" id="cy-${m.id}">0</span>
+      </button>
+      <button class="vote no" data-match="${m.id}" data-choice="no" aria-pressed="false"
+              aria-label="لا — ${esc(m.home.n)} ضد ${esc(m.away.n)}">
+        <span class="lbl">❌ لا</span><span class="c cn" id="cn-${m.id}">0</span>
+      </button>
+    </div>
+    <div class="stat">
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="نسبة من قالوا نحطها"><span class="barFill"></span></div>
+      <div class="stat-row">
+        <span class="cy">✅ <span class="cntYes">0</span></span>
+        <span class="cn">❌ <span class="cntNo">0</span></span>
+        <span class="pctTxt">لا أصوات بعد</span>
+      </div>
+    </div>
+  </article>`;
+}
+
+/* ======= تطبيق الإجماليات على الواجهة ======= */
+function applyTallies(){
+  DAYS.forEach(d => d.matches.forEach(m => {
+    const t = tallies[m.id] || {yes:0,no:0};
+    const yes = t.yes||0, no = t.no||0, total = yes+no;
+    const pct = total ? Math.round(yes/total*100) : 0;
+    const card = $("match-"+m.id); if(!card) return;
+    card.querySelector(".barFill").style.width = (total?pct:0)+"%";
+    card.querySelector(".cntYes").textContent = yes;
+    card.querySelector(".cntNo").textContent = no;
+    $("cy-"+m.id).textContent = yes;
+    $("cn-"+m.id).textContent = no;
+    card.querySelector(".pctTxt").textContent = total ? (pct+"% نحطها") : "لا أصوات بعد";
+    card.querySelector(".bar").setAttribute("aria-valuenow", pct);
+  }));
+  renderResults();
+}
+
+/* ======= تطبيق أصواتي على الأزرار ======= */
+function applyMyVotes(){
+  DAYS.forEach(d => d.matches.forEach(m => {
+    const v = myVotes[m.id];
+    const card = $("match-"+m.id); if(!card) return;
+    const y = card.querySelector(".vote.yes"), n = card.querySelector(".vote.no");
+    y.classList.toggle("active", v==="yes"); y.setAttribute("aria-pressed", v==="yes");
+    n.classList.toggle("active", v==="no"); n.setAttribute("aria-pressed", v==="no");
+  }));
+}
+
+/* ======= التصويت (transaction آمن) ======= */
+function castVote(matchId, choice){
+  if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
+  if(!myName){ openGate(); return; }
+  if(locks[matchId]) return;
+  locks[matchId] = true;
+
+  const prev = myVotes[matchId] || null;
+  const next = (prev === choice) ? null : choice;  // ضغط نفس الزر = إلغاء
+
+  // تحديث متفائل فوري
+  if(next) myVotes[matchId] = next; else delete myVotes[matchId];
+  applyMyVotes();
+
+  const dYes = (next==="yes"?1:0) - (prev==="yes"?1:0);
+  const dNo  = (next==="no"?1:0)  - (prev==="no"?1:0);
+
+  db.ref("userVotes/"+userKey+"/"+matchId).set(next).catch(()=>{});
+  db.ref("tallies/"+matchId).transaction(cur => {
+    cur = cur || {yes:0,no:0};
+    cur.yes = Math.max(0, (cur.yes||0) + dYes);
+    cur.no  = Math.max(0, (cur.no||0)  + dNo);
+    return cur;
+  }, (err, committed) => {
+    locks[matchId] = false;
+    if(err){ toast("تعذّر حفظ الصوت، حاول مرة ثانية"); }
+  });
+}
+
+/* ======= لوحة المتفق عليها ======= */
+function renderResults(){
+  const box = $("resultsList");
+  const items = [];
+  DAYS.forEach(d => d.matches.forEach(m => {
+    const t = tallies[m.id] || {yes:0,no:0};
+    const yes = t.yes||0, no = t.no||0, total = yes+no;
+    if(total >= CONSENSUS_MIN && total > 0){
+      const pct = Math.round(yes/total*100);
+      if(pct >= CONSENSUS_PCT) items.push({m, pct, total, yes, day:d.title});
+    }
+  }));
+  items.sort((a,b) => b.pct - a.pct || b.total - a.total);
+  if(!items.length){
+    box.innerHTML = `<div class="empty">ما فيه مباريات متفق عليها بعد — صوّتوا وخلّوها تطلع هنا 👀</div>`;
+    return;
+  }
+  box.innerHTML = items.map((it,i) => `
+    <div class="winner">
+      <span class="rank">${i+1}</span>
+      <span class="teams">${it.m.home.f} ${esc(it.m.home.n)} <span style="color:var(--muted)">ضد</span> ${esc(it.m.away.n)} ${it.m.away.f}
+        <div class="meta">${esc(it.day)} · ${it.m.t}</div>
+      </span>
+      <span class="big">${it.pct}%<div class="meta" style="text-align:center">${it.yes}/${it.total}</div></span>
+    </div>`).join("");
+}
+
+/* ======= بوابة الاسم ======= */
+function openGate(){
+  $("nameInput").value = myName || "";
+  $("nameErr").textContent = "";
+  $("gate").classList.add("show");
+  setTimeout(()=>$("nameInput").focus(), 50);
+}
+function closeGate(){ $("gate").classList.remove("show"); }
+function submitName(){
+  const v = $("nameInput").value.trim();
+  if(v.length < 2){ $("nameErr").textContent = "اكتب اسمك (حرفين على الأقل)"; return; }
+  myName = v;
+  localStorage.setItem("wcv_name", v);
+  if(firebaseReady){
+    db.ref("users/"+userKey).update({ name: v, ts: firebase.database.ServerValue.TIMESTAMP }).catch(()=>{});
+  }
+  $("whoName").textContent = v;
+  $("whoBox").hidden = false;
+  closeGate();
+  toast("أهلاً " + v + "! 🎉");
+}
+
+/* ======= لوحة الإدارة ======= */
+function openAdmin(){ $("admin").classList.add("show"); if(adminUnlocked){ showAdminPanel(); } else { setTimeout(()=>$("adminPass").focus(),50); } }
+function closeAdmin(){ $("admin").classList.remove("show"); if(location.hash==="#admin"){ history.replaceState(null,"",location.pathname+location.search); } }
+function tryAdmin(){
+  if($("adminPass").value === ADMIN_PASSCODE){
+    adminUnlocked = true;
+    $("adminGate").hidden = true;
+    $("adminPanel").hidden = false;
+    if(firebaseReady){ db.ref("userVotes").on("value", s => { allVotes = s.val()||{}; if(adminUnlocked) showAdminPanel(); }); }
+    showAdminPanel();
+  } else {
+    $("adminErr").textContent = "رمز غير صحيح";
+  }
+}
+function showAdminPanel(){
+  const panel = $("adminPanel");
+  const voters = Object.keys(allUsers);
+  let totalVotes = 0;
+  Object.values(allVotes).forEach(v => totalVotes += Object.keys(v||{}).length);
+
+  // جدول المباريات
+  let matchRows = "";
+  DAYS.forEach(d => d.matches.forEach(m => {
+    const t = tallies[m.id]||{yes:0,no:0}; const yes=t.yes||0,no=t.no||0,total=yes+no;
+    const pct = total?Math.round(yes/total*100):0;
+    matchRows += `<tr><td>${m.home.f} ${esc(m.home.n)} ضد ${esc(m.away.n)} ${m.away.f}</td>
+      <td class="num" style="color:#8df0bd">${yes}</td><td class="num" style="color:#ffb3ba">${no}</td>
+      <td class="num" style="color:var(--gold-2)">${total?pct+"%":"—"}</td></tr>`;
+  }));
+
+  // بطاقات المصوّتين
+  let voterCards = "";
+  voters.sort((a,b)=> (allUsers[a].ts||0)-(allUsers[b].ts||0));
+  if(!voters.length){ voterCards = `<div class="empty">لا مصوّتين بعد.</div>`; }
+  voters.forEach(uk => {
+    const name = allUsers[uk]?.name || "—";
+    const votes = allVotes[uk] || {};
+    const ids = Object.keys(votes);
+    const yesChips = ids.filter(id=>votes[id]==="yes").map(id=>`<span class="chip y">✅ ${esc(short(id))}</span>`).join("");
+    const noChips  = ids.filter(id=>votes[id]==="no").map(id=>`<span class="chip n">❌ ${esc(short(id))}</span>`).join("");
+    voterCards += `<div class="voter">
+      <div class="vh">👤 ${esc(name)} <span class="badge">${ids.length} صوت</span></div>
+      <div class="chips">${yesChips}${noChips || (yesChips?"":'<span class="badge">لم يصوّت بعد</span>')}</div>
+    </div>`;
+  });
+
+  panel.innerHTML = `
+    <h2>🔓 لوحة الإدارة</h2>
+    <div class="a-stats">
+      <div class="a-stat"><div class="n">${voters.length}</div><div class="l">مصوّت</div></div>
+      <div class="a-stat"><div class="n">${totalVotes}</div><div class="l">إجمالي الأصوات</div></div>
+      <div class="a-stat"><div class="n">34</div><div class="l">مباراة</div></div>
+    </div>
+    <div class="a-sec-ttl">📊 حسب المباراة</div>
+    <table class="a-tbl"><thead><tr><th>المباراة</th><th class="num">✅</th><th class="num">❌</th><th class="num">%</th></tr></thead><tbody>${matchRows}</tbody></table>
+    <div class="a-sec-ttl">🧑‍🤝‍🧑 حسب المصوّت</div>
+    ${voterCards}
+    <button class="btn-ghost" id="adminBackBtn" style="margin-top:16px;width:100%;">رجوع للموقع</button>
+  `;
+  $("adminBackBtn").onclick = closeAdmin;
+}
+function short(matchId){ const m = MATCH_INDEX[matchId]; return m ? (m.home.n+"/"+m.away.n) : matchId; }
+
+/* ======= Firebase ======= */
+function initFirebase(){
+  const ok = firebaseConfig.databaseURL && !firebaseConfig.databaseURL.includes("REPLACE");
+  if(!ok){ $("cfgBanner").classList.add("show"); setConn(false,"غير مهيأة"); return; }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    firebaseReady = true;
+
+    db.ref(".info/connected").on("value", s => setConn(s.val()===true));
+    db.ref("tallies").on("value", s => { tallies = s.val()||{}; applyTallies(); });
+    db.ref("userVotes/"+userKey).on("value", s => { myVotes = s.val()||{}; applyMyVotes(); });
+    db.ref("users").on("value", s => { allUsers = s.val()||{}; $("voterCount").textContent = Object.keys(allUsers).length; if(adminUnlocked) showAdminPanel(); });
+
+    // سجّل المستخدم لو عنده اسم محفوظ
+    if(myName){ db.ref("users/"+userKey).update({ name: myName, ts: firebase.database.ServerValue.TIMESTAMP }).catch(()=>{}); }
+  }catch(e){
+    console.error("Firebase init failed:", e);
+    $("cfgBanner").classList.add("show");
+    setConn(false,"خطأ بالاتصال");
+  }
+}
+function setConn(on, txt){
+  $("connDot").classList.toggle("on", !!on);
+  $("connTxt").textContent = txt || (on ? "مباشر" : "غير متصل");
+}
+
+/* ======= ربط الأحداث ======= */
+function wire(){
+  // تفويض النقر على أزرار التصويت
+  $("matches").addEventListener("click", e => {
+    const btn = e.target.closest(".vote"); if(!btn) return;
+    castVote(btn.dataset.match, btn.dataset.choice);
+  });
+  // بوابة الاسم
+  $("enterBtn").addEventListener("click", submitName);
+  $("nameInput").addEventListener("keydown", e => { if(e.key==="Enter") submitName(); });
+  $("changeNameBtn").addEventListener("click", openGate);
+  // الإدارة
+  $("adminEnterBtn").addEventListener("click", tryAdmin);
+  $("adminPass").addEventListener("keydown", e => { if(e.key==="Enter") tryAdmin(); });
+  $("adminCloseBtn").addEventListener("click", closeAdmin);
+  window.addEventListener("hashchange", () => { if(location.hash==="#admin") openAdmin(); });
+}
+
+/* ======= التشغيل ======= */
+function start(){
+  buildMatches();
+  wire();
+  initFirebase();
+  applyTallies();
+  applyMyVotes();
+  if(myName){ $("whoName").textContent = myName; $("whoBox").hidden = false; }
+  else { openGate(); }
+  if(location.hash === "#admin"){ openAdmin(); }
+}
+document.addEventListener("DOMContentLoaded", start);
+</script>
+</body>
+</html>
