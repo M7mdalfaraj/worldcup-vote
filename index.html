@@ -183,6 +183,13 @@
   .m-voters .vrow.y .nm{border-color:rgba(39,208,122,.30);}
   .m-voters .vrow.n .nm{border-color:rgba(255,92,108,.30);}
   .m-voters .nm.me{background:rgba(212,175,55,.14);border-color:var(--line);color:var(--gold-2);}
+  /* admin: delete-vote ✕ on voter chips */
+  .m-voters .nm.adm{display:inline-flex;align-items:center;gap:6px;padding-inline-end:4px;}
+  .m-voters .nm .del-vote{font-family:inherit;cursor:pointer;border:none;border-radius:999px;
+    width:18px;height:18px;line-height:1;display:grid;place-items:center;
+    font-size:11px;font-weight:900;color:#ffd2d7;background:rgba(255,92,108,.22);transition:background .15s,transform .1s;}
+  .m-voters .nm .del-vote:hover{background:var(--no);color:#fff;}
+  .m-voters .nm .del-vote:active{transform:scale(.9);}
 
   /* ---------- Overlay (name gate + admin) ---------- */
   .overlay{
@@ -520,7 +527,9 @@ function applyVoters(){
       (v==="yes"?yesN:noN).push({uk, nm:nameFor(uk)});
     });
     if(!yesN.length && !noN.length){ box.innerHTML = ""; return; }
-    const chip = o => `<span class="nm${o.uk===userKey?" me":""}">${esc(o.nm)}</span>`;
+    const chip = o => adminUnlocked
+      ? `<span class="nm adm${o.uk===userKey?" me":""}">${esc(o.nm)}<button class="del-vote" data-match="${m.id}" data-uk="${esc(o.uk)}" title="حذف صوت ${esc(o.nm)}" aria-label="حذف صوت ${esc(o.nm)}">✕</button></span>`
+      : `<span class="nm${o.uk===userKey?" me":""}">${esc(o.nm)}</span>`;
     let h = "";
     if(yesN.length) h += `<div class="vrow y"><span class="lead">✅</span>${yesN.map(chip).join("")}</div>`;
     if(noN.length)  h += `<div class="vrow n"><span class="lead">❌</span>${noN.map(chip).join("")}</div>`;
@@ -585,6 +594,30 @@ function clearMyVotes(){
   toast("تم مسح أصواتك ✅");
 }
 
+/* ======= حذف صوت (للأدمن فقط) ======= */
+function adminDeleteVote(matchId, uk){
+  if(!adminUnlocked) return;
+  if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
+  const dir = allVotes[uk] && allVotes[uk][matchId];
+  if(dir!=="yes" && dir!=="no") return;
+  const nm = nameFor(uk);
+  if(!confirm('تحذف صوت "'+nm+'" في هذي المباراة؟')) return;
+  const dYes = (dir==="yes"? -1 : 0);
+  const dNo  = (dir==="no" ? -1 : 0);
+  db.ref("userVotes/"+uk+"/"+matchId).set(null).catch(()=>{});
+  db.ref("tallies/"+matchId).transaction(cur => {
+    cur = cur || {yes:0,no:0};
+    cur.yes = Math.max(0, (cur.yes||0) + dYes);
+    cur.no  = Math.max(0, (cur.no||0)  + dNo);
+    return cur;
+  });
+  if(allVotes[uk]) delete allVotes[uk][matchId];
+  if(uk===userKey){ delete myVotes[matchId]; applyMyVotes(); }
+  applyVoters();
+  if(adminUnlocked) showAdminPanel();
+  toast("تم حذف الصوت ✅");
+}
+
 /* ======= لوحة المتفق عليها ======= */
 function renderResults(){
   const box = $("resultsList");
@@ -642,8 +675,8 @@ function tryAdmin(){
     adminUnlocked = true;
     $("adminGate").hidden = true;
     $("adminPanel").hidden = false;
-    if(firebaseReady){ db.ref("userVotes").on("value", s => { allVotes = s.val()||{}; if(adminUnlocked) showAdminPanel(); }); }
     showAdminPanel();
+    applyVoters();
   } else {
     $("adminErr").textContent = "رمز غير صحيح";
   }
@@ -729,6 +762,8 @@ function setConn(on, txt){
 function wire(){
   // تفويض النقر على أزرار التصويت
   $("matches").addEventListener("click", e => {
+    const del = e.target.closest(".del-vote");
+    if(del){ e.stopPropagation(); adminDeleteVote(del.dataset.match, del.dataset.uk); return; }
     const btn = e.target.closest(".vote"); if(!btn) return;
     castVote(btn.dataset.match, btn.dataset.choice);
   });
