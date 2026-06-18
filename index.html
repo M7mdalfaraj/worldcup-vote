@@ -172,6 +172,18 @@
   .stat-row .pctTxt{margin-inline-start:auto;color:var(--gold-2);font-weight:800;}
   .stat-row .cy{color:#8df0bd;} .stat-row .cn{color:#ffb3ba;}
 
+  /* who voted (under each match) */
+  .m-voters{display:flex;flex-direction:column;gap:6px;margin-top:11px;}
+  .m-voters:empty{margin-top:0;}
+  .m-voters .vrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+  .m-voters .vrow .lead{font-size:12px;font-weight:900;flex:0 0 auto;}
+  .m-voters .vrow.y .lead{color:#8df0bd;} .m-voters .vrow.n .lead{color:#ffb3ba;}
+  .m-voters .nm{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;
+    background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);color:var(--ink);white-space:nowrap;}
+  .m-voters .vrow.y .nm{border-color:rgba(39,208,122,.30);}
+  .m-voters .vrow.n .nm{border-color:rgba(255,92,108,.30);}
+  .m-voters .nm.me{background:rgba(212,175,55,.14);border-color:var(--line);color:var(--gold-2);}
+
   /* ---------- Overlay (name gate + admin) ---------- */
   .overlay{
     position:fixed;inset:0;z-index:60;display:none;
@@ -252,13 +264,14 @@
 <!-- ======= Header ======= -->
 <header class="app">
   <div class="head-inner">
-    <div class="brand"><span class="trophy">🏆</span><span>نحطها؟ <b>2026</b></span></div>
+    <div class="brand"><span class="trophy">🏆</span><span>نحطها؟</span></div>
     <div class="head-spacer"></div>
     <span class="pill" id="connPill"><span class="dot" id="connDot"></span><span id="connTxt">يتصل…</span></span>
     <span class="pill" title="عدد المصوّتين">👥 <span id="voterCount">0</span></span>
     <div class="who" id="whoBox" hidden>
       <span class="pill">أهلاً، <span class="name" id="whoName">—</span></span>
       <button class="btn-ghost" id="changeNameBtn">تغيير الاسم</button>
+      <button class="btn-ghost" id="clearVotesBtn">🗑️ مسح أصواتي</button>
     </div>
   </div>
 </header>
@@ -459,6 +472,7 @@ function matchCard(m){
         <span class="pctTxt">لا أصوات بعد</span>
       </div>
     </div>
+    <div class="m-voters" id="mv-${m.id}"></div>
   </article>`;
 }
 
@@ -491,6 +505,29 @@ function applyMyVotes(){
   }));
 }
 
+/* ======= عرض أسماء المصوّتين تحت كل مباراة ======= */
+function nameFor(uk){
+  const nm = (uk===userKey) ? (allUsers[uk]?.name || myName) : allUsers[uk]?.name;
+  return nm || "ضيف";
+}
+function applyVoters(){
+  DAYS.forEach(d => d.matches.forEach(m => {
+    const box = $("mv-"+m.id); if(!box) return;
+    const yesN = [], noN = [];
+    Object.keys(allVotes).forEach(uk => {
+      const v = allVotes[uk] && allVotes[uk][m.id];
+      if(v!=="yes" && v!=="no") return;
+      (v==="yes"?yesN:noN).push({uk, nm:nameFor(uk)});
+    });
+    if(!yesN.length && !noN.length){ box.innerHTML = ""; return; }
+    const chip = o => `<span class="nm${o.uk===userKey?" me":""}">${esc(o.nm)}</span>`;
+    let h = "";
+    if(yesN.length) h += `<div class="vrow y"><span class="lead">✅</span>${yesN.map(chip).join("")}</div>`;
+    if(noN.length)  h += `<div class="vrow n"><span class="lead">❌</span>${noN.map(chip).join("")}</div>`;
+    box.innerHTML = h;
+  }));
+}
+
 /* ======= التصويت (transaction آمن) ======= */
 function castVote(matchId, choice){
   if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
@@ -503,7 +540,10 @@ function castVote(matchId, choice){
 
   // تحديث متفائل فوري
   if(next) myVotes[matchId] = next; else delete myVotes[matchId];
+  if(!allVotes[userKey]) allVotes[userKey] = {};
+  if(next) allVotes[userKey][matchId] = next; else delete allVotes[userKey][matchId];
   applyMyVotes();
+  applyVoters();
 
   const dYes = (next==="yes"?1:0) - (prev==="yes"?1:0);
   const dNo  = (next==="no"?1:0)  - (prev==="no"?1:0);
@@ -518,6 +558,31 @@ function castVote(matchId, choice){
     locks[matchId] = false;
     if(err){ toast("تعذّر حفظ الصوت، حاول مرة ثانية"); }
   });
+}
+
+/* ======= مسح كل أصواتي ======= */
+function clearMyVotes(){
+  if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
+  const ids = Object.keys(myVotes);
+  if(!ids.length){ toast("ما عندك أصوات لمسحها"); return; }
+  if(!confirm("متأكد تبي تمسح كل أصواتك؟ بترجع تقدر تصوّت من جديد.")) return;
+  ids.forEach(matchId => {
+    const prev = myVotes[matchId];
+    const dYes = (prev==="yes"? -1 : 0);
+    const dNo  = (prev==="no" ? -1 : 0);
+    db.ref("userVotes/"+userKey+"/"+matchId).set(null).catch(()=>{});
+    db.ref("tallies/"+matchId).transaction(cur => {
+      cur = cur || {yes:0,no:0};
+      cur.yes = Math.max(0, (cur.yes||0) + dYes);
+      cur.no  = Math.max(0, (cur.no||0)  + dNo);
+      return cur;
+    });
+  });
+  myVotes = {};
+  if(allVotes[userKey]) allVotes[userKey] = {};
+  applyMyVotes();
+  applyVoters();
+  toast("تم مسح أصواتك ✅");
 }
 
 /* ======= لوحة المتفق عليها ======= */
@@ -644,7 +709,8 @@ function initFirebase(){
     db.ref(".info/connected").on("value", s => setConn(s.val()===true));
     db.ref("tallies").on("value", s => { tallies = s.val()||{}; applyTallies(); });
     db.ref("userVotes/"+userKey).on("value", s => { myVotes = s.val()||{}; applyMyVotes(); });
-    db.ref("users").on("value", s => { allUsers = s.val()||{}; $("voterCount").textContent = Object.keys(allUsers).length; if(adminUnlocked) showAdminPanel(); });
+    db.ref("userVotes").on("value", s => { allVotes = s.val()||{}; applyVoters(); if(adminUnlocked) showAdminPanel(); });
+    db.ref("users").on("value", s => { allUsers = s.val()||{}; $("voterCount").textContent = Object.keys(allUsers).length; applyVoters(); if(adminUnlocked) showAdminPanel(); });
 
     // سجّل المستخدم لو عنده اسم محفوظ
     if(myName){ db.ref("users/"+userKey).update({ name: myName, ts: firebase.database.ServerValue.TIMESTAMP }).catch(()=>{}); }
@@ -670,6 +736,7 @@ function wire(){
   $("enterBtn").addEventListener("click", submitName);
   $("nameInput").addEventListener("keydown", e => { if(e.key==="Enter") submitName(); });
   $("changeNameBtn").addEventListener("click", openGate);
+  $("clearVotesBtn").addEventListener("click", clearMyVotes);
   // الإدارة
   $("adminEnterBtn").addEventListener("click", tryAdmin);
   $("adminPass").addEventListener("keydown", e => { if(e.key==="Enter") tryAdmin(); });
@@ -684,6 +751,7 @@ function start(){
   initFirebase();
   applyTallies();
   applyMyVotes();
+  applyVoters();
   if(myName){ $("whoName").textContent = myName; $("whoBox").hidden = false; }
   else { openGate(); }
   if(location.hash === "#admin"){ openAdmin(); }
