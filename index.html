@@ -121,6 +121,27 @@
   .winner .meta{font-size:12px;color:var(--muted);font-weight:700;}
   .winner .big{color:var(--yes);font-weight:900;font-size:15px;white-space:nowrap;}
   .empty{color:var(--muted);font-weight:700;text-align:center;padding:14px;font-size:14px;}
+  /* underdog vote (داخل لوحة المتفق عليها) */
+  .winner-wrap{display:flex;flex-direction:column;}
+  .winner-wrap .winner{border-radius:13px 13px 0 0;}
+  .ud{
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    padding:8px 13px;
+    background:rgba(212,175,55,0.06);
+    border:1px solid rgba(212,175,55,0.22);border-top:none;
+    border-radius:0 0 13px 13px;
+  }
+  .ud .q{font-weight:800;font-size:12.5px;color:var(--gold-2);display:flex;align-items:center;gap:5px;}
+  .ud .ud-btns{display:flex;gap:7px;margin-inline-start:auto;}
+  .udbtn{
+    font-family:inherit;display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;border-radius:10px;font-weight:800;font-size:12.5px;cursor:pointer;
+    background:rgba(255,255,255,0.04);border:1px solid var(--line);color:var(--ink);transition:.15s;
+  }
+  .udbtn b{font-weight:900;opacity:.8;font-size:12px;}
+  .udbtn:hover{background:rgba(255,255,255,0.08);border-color:var(--gold);}
+  .udbtn.yes.on{background:rgba(39,208,122,0.18);border-color:rgba(39,208,122,.5);color:var(--yes);}
+  .udbtn.no.on{background:rgba(255,92,108,0.16);border-color:rgba(255,92,108,.5);color:#ff9a9f;}
 
   /* ---------- Day badge ---------- */
   .day{margin:26px 0 14px;display:flex;justify-content:center;}
@@ -382,6 +403,8 @@
      tallies/{matchId}   = { yes: <int>, no: <int> }   // aggregated counts
      users/{userKey}     = { name: <string>, ts: <ts> } // voters
      userVotes/{userKey}/{matchId} = "yes" | "no"        // each person's vote
+     udTallies/{matchId} = { yes: <int>, no: <int> }    // underdog vote counts
+     udVotes/{userKey}/{matchId} = "yes" | "no"          // each person's underdog vote
    ========================================================================= */
 
 /* >>> STEP 1: ضع إعدادات Firebase هنا (apiKey و databaseURL أهم شي) <<< */
@@ -463,6 +486,8 @@ let tallies = {};      // matchId -> {yes,no}
 let myVotes = {};      // matchId -> 'yes'|'no'
 let allUsers = {};     // userKey -> {name,ts}
 let allVotes = {};     // userKey -> {matchId:'yes'|'no'}
+let udTallies = {};    // matchId -> {yes,no}  تصويت الأندردوغ
+let udMyVotes = {};    // matchId -> 'yes'|'no'  صوتي في الأندردوغ
 const locks = {};
 let adminUnlocked = false;
 
@@ -611,6 +636,30 @@ function castVote(matchId, choice){
   });
 }
 
+/* ======= تصويت الأندردوغ (نعم/لا) ======= */
+function castUnderdog(matchId, choice){
+  if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
+  if(!myName){ openGate(); return; }
+  const lk = "ud_"+matchId;
+  if(locks[lk]) return;
+  locks[lk] = true;
+  const prev = udMyVotes[matchId] || null;
+  const next = (prev === choice) ? null : choice;
+  if(next) udMyVotes[matchId] = next; else delete udMyVotes[matchId];
+  renderResults();
+  const dYes = (next==="yes"?1:0) - (prev==="yes"?1:0);
+  const dNo  = (next==="no"?1:0)  - (prev==="no"?1:0);
+  db.ref("udVotes/"+userKey+"/"+matchId).set(next).catch(()=>{});
+  db.ref("udTallies/"+matchId).transaction(cur => {
+    cur = cur || {yes:0,no:0};
+    cur.yes = Math.max(0,(cur.yes||0)+dYes);
+    cur.no  = Math.max(0,(cur.no||0)+dNo);
+    return cur;
+  }, (err, committed) => {
+    locks[lk] = false;
+    if(err){ toast("تعذّر حفظ الصوت، حاول مرة ثانية"); }
+  });
+}
 /* ======= مسح كل أصواتي ======= */
 function clearMyVotes(){
   if(!firebaseReady){ toast("⚠️ قاعدة البيانات غير مهيأة بعد"); return; }
@@ -760,14 +809,28 @@ function renderResults(){
     box.innerHTML = `<div class="empty">ما فيه مباريات متفق عليها بعد — صوّتوا وخلّوها تطلع هنا 👀</div>`;
     return;
   }
-  box.innerHTML = items.map((it,i) => `
-    <div class="winner">
-      <span class="rank">${i+1}</span>
-      <span class="teams">${it.m.home.f} ${esc(it.m.home.n)} <span style="color:var(--muted)">ضد</span> ${esc(it.m.away.n)} ${it.m.away.f}
-        <div class="meta">${esc(it.day)} · ${it.m.t}</div>
-      </span>
-      <span class="big">${it.pct}%<div class="meta" style="text-align:center">${it.yes}/${it.total}</div></span>
-    </div>`).join("");
+  box.innerHTML = items.map((it,i) => {
+    const ut = udTallies[it.m.id] || {yes:0,no:0};
+    const uy = ut.yes||0, un = ut.no||0;
+    const mine = udMyVotes[it.m.id] || null;
+    return `
+    <div class="winner-wrap">
+      <div class="winner">
+        <span class="rank">${i+1}</span>
+        <span class="teams">${it.m.home.f} ${esc(it.m.home.n)} <span style="color:var(--muted)">ضد</span> ${esc(it.m.away.n)} ${it.m.away.f}
+          <div class="meta">${esc(it.day)} · ${it.m.t}</div>
+        </span>
+        <span class="big">${it.pct}%<div class="meta" style="text-align:center">${it.yes}/${it.total}</div></span>
+      </div>
+      <div class="ud">
+        <span class="q">🐶 ندعم الأندردوغ؟</span>
+        <div class="ud-btns">
+          <button class="udbtn yes${mine==='yes'?' on':''}" data-match="${it.m.id}" data-ud="yes" aria-pressed="${mine==='yes'}">✅ نعم <b>${uy}</b></button>
+          <button class="udbtn no${mine==='no'?' on':''}" data-match="${it.m.id}" data-ud="no" aria-pressed="${mine==='no'}">❌ لا <b>${un}</b></button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
 }
 
 /* ======= بوابة الاسم ======= */
@@ -869,6 +932,8 @@ function initFirebase(){
     db.ref("tallies").on("value", s => { tallies = s.val()||{}; applyTallies(); });
     db.ref("userVotes/"+userKey).on("value", s => { myVotes = s.val()||{}; applyMyVotes(); });
     db.ref("userVotes").on("value", s => { allVotes = s.val()||{}; applyVoters(); if(adminUnlocked) showAdminPanel(); if(presenceOpen()) renderPresence(); });
+    db.ref("udTallies").on("value", s => { udTallies = s.val()||{}; renderResults(); });
+    db.ref("udVotes/"+userKey).on("value", s => { udMyVotes = s.val()||{}; renderResults(); });
     db.ref("users").on("value", s => { allUsers = s.val()||{}; $("voterCount").textContent = uniqueUserCount(); applyVoters(); if(adminUnlocked) showAdminPanel(); if(presenceOpen()) renderPresence(); });
 
     // سجّل المستخدم لو عنده اسم محفوظ
@@ -894,6 +959,10 @@ function wire(){
     castVote(btn.dataset.match, btn.dataset.choice);
   });
   // بوابة الاسم
+  $("resultsList").addEventListener("click", e => {
+    const b = e.target.closest(".udbtn"); if(!b) return;
+    castUnderdog(b.dataset.match, b.dataset.ud);
+  });
   $("enterBtn").addEventListener("click", submitName);
   $("nameInput").addEventListener("keydown", e => { if(e.key==="Enter") submitName(); });
   $("changeNameBtn").addEventListener("click", openGate);
